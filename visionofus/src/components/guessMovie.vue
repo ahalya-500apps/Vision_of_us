@@ -31,13 +31,13 @@
       </div>
       <div id="output" class="hide"></div>
     </div>
-    <div v-if="result && result.length > 0">
-      <div v-for="(item, index) in result" :key="index">
+    <div class="row mt-4" v-if="result && result.length > 0">
+      <b-col md="4" v-for="(item, index) in result" :key="index">
         <!--  -->
         <b-card
-          :img-src="item.image ? item.image : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRn5zGCReC7ySEWXQQOGYlvGLHF255MTpNeb5Uu8OdKaMNw5B8bjDmZDblrkrfzDIIGSJ8&usqp=CAU'"
+          :img-src="item.image ? item.image : 'https://icon-library.com/images/song-icon-png/song-icon-png-27.jpg'"
           img-alt="Card image"
-          img-left
+          fluid
           class="mb-3"
           @click="playAudio(item.song, index)"
         >
@@ -50,10 +50,10 @@
             <source :src="item.song" />
           </audio>
         </b-card>
-      </div>
+      </b-col>
     </div>
-    <div v-else>
-      No song found!
+    <div v-else-if="err && err.length > 0">
+      {{ err }}
     </div>
   </b-row>
 </template>
@@ -67,6 +67,7 @@ export default {
       speechObj: "",
       showLoader: false,
       result: [],
+      err: "",
     };
   },
   mounted() {
@@ -125,6 +126,7 @@ export default {
       if (response.length == 0) response = await guessMovieJs.shazam("samajavaragamana");
       console.log("response", response);
       this.result = response;
+      this.result.length == 0 ? (this.err = "No result found") : this.err;
     },
     playAudio(song) {
       var audio = new Audio(song);

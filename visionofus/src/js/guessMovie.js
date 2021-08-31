@@ -1,6 +1,7 @@
 const axios = require("axios");
 
 class GuessMovie {
+    // Using spoyify api 
   async spotify(song) {
     const spotify_options = {
       method: "GET",
@@ -32,7 +33,8 @@ class GuessMovie {
       });
     return output;
   }
-
+  
+    // Using shazam api 
   async shazam(song) {
     const shazam_options = {
       method: "GET",
