@@ -31,20 +31,20 @@
       </div>
       <div id="output" class="hide"></div>
     </div>
-    <div class="row mt-4" v-if="result && result.length > 0">
+    <div class="border-top mx-0 pt-4 row" v-if="result && result.length > 0">
       <b-col md="4" v-for="(item, index) in result" :key="index">
         <!--  -->
         <b-card
           :img-src="item.image ? item.image : 'https://icon-library.com/images/song-icon-png/song-icon-png-27.jpg'"
           img-alt="Card image"
           fluid
-          class="mb-3"
+          class="mb-3 mx-auto audio p-2"
           @click="playAudio(item.song, index)"
         >
-          <b-card-text>
-            <p>Title : {{ item.title }}</p>
-            <p>movie : {{ item.movie }}</p>
-            <p>singer : {{ item.singer }}</p>
+          <b-card-text class="text-left">
+            <p class="mb-1 small">Title : {{ item.title }}</p>
+            <p class="mb-1 small">movie : {{ item.movie }}</p>
+            <p class="mb-1 small">singer : {{ item.singer }}</p>
           </b-card-text>
           <audio v-if="item.song" :id="`myAudio_${index}`" controls>
             <source :src="item.song" />
@@ -52,7 +52,7 @@
         </b-card>
       </b-col>
     </div>
-    <div v-else-if="err && err.length > 0">
+    <div v-else-if="err && err.length > 0 && speechObj && speechObj.text && speechObj.text.length > 0">
       {{ err }}
     </div>
   </b-row>
@@ -71,17 +71,16 @@ export default {
     };
   },
   mounted() {
-    this.guessMovie();
   },
 
   methods: {
     runSpeechRecognition() {
+      this.result = [];
+      this.speechObj = "";
       this.showLoader = true;
       const self = this;
       // get output div reference
-      var output = document.getElementById("output");
       var bindData = document.getElementById("bindData");
-      console.log("bindData", bindData);
 
       // get action element reference
       var action = document.getElementById("action");
@@ -98,33 +97,30 @@ export default {
         action.innerHTML = "<small>stopped listening, hope you are done...</small>";
         self.showLoader = false;
         recognition.stop();
-        console.log(output, self.showLoader);
       };
 
       // This runs when the speech recognition service returns result
       recognition.onresult = function(event) {
         var transcript = event.results[0][0].transcript;
-        // var confidence = event.results[0][0].confidence;
         this.text = transcript;
-        console.log(output);
-        // this.guessMovie(transcript);
 
-        // output.innerHTML = "<b>Text:</b> " + transcript + "<br/> <b>Confidence:</b> " + confidence * 100 + "%";
         bindData.value = transcript;
         self.guessMovie();
-        // output.classList.remove("hide");
       };
-      console.log("recognition", recognition, this.speechObj);
 
       // start recognition
       recognition.start();
     },
     async guessMovie() {
-      console.log("this.text", this.speechObj);
-      let text = "samajavaragamana";
-      let response = await guessMovieJs.spotify(text);
-      if (response.length == 0) response = await guessMovieJs.shazam("samajavaragamana");
-      console.log("response", response);
+      let text = this.speechObj.text.split(" ");
+
+      if (text.length > 3) {
+        text.slice(0, 3);
+        this.speechObj.text = text[0] + " " + text[1] + " " + text[2];
+      }
+      let response = await guessMovieJs.spotify(this.speechObj.text);
+      if (response.length == 0) response = await guessMovieJs.shazam(this.speechObj.text);
+
       this.result = response;
       this.result.length == 0 ? (this.err = "No result found") : this.err;
     },
@@ -307,5 +303,12 @@ button {
     transform: translateY(0px);
     background: #fff;
   }
+}
+.audio img {
+  width: 100px;
+  margin: auto !important;
+}
+audio {
+  height: 39px;
 }
 </style>
